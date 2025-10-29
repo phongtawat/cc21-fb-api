@@ -3,6 +3,8 @@ import authRoute from './routes/auth.route.js'
 import createHttpError from 'http-errors'
 import errorMiddleware from './middlewares/error.middleware.js'
 import notfoundMiddleware from './middlewares/notfound.middleware.js'
+import shutdownUtil from './utils/shutdown.util.js'
+// import prisma from './config/prisma.config.js'
 
 const app = express()
 app.use(express.json())
@@ -13,7 +15,15 @@ app.use('/api/comment', (req, res)=>{ res.send('comment service')})
 app.use('/api/like', (req, res)=>{ res.send('like service')})
 
 app.use(notfoundMiddleware)
-
 app.use(errorMiddleware)
+
+// prisma.$executeRaw`show Tables`.then(console.log)
+
+process.on('SIGINT', ()=> shutdownUtil('SIGINT')) // CTRL + C
+process.on('SIGTERM', ()=> shutdownUtil('SIGTERM')) // normal kill process
+
+// Catch unhandled errors
+process.on("uncaughtException", ()=>  shutdownUtil('uncaughtException'))
+process.on("unhandledRejection", ()=> shutdownUtil('unhandledRejection'))
 
 export default app
